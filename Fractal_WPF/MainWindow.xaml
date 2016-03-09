@@ -5,13 +5,29 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Fractal_WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="800" Width="700">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="150"/>
         </Grid.ColumnDefinitions>
-        <Canvas x:Name="DrawFractalCanvas" Grid.Column="0"  Background="Green"/>
-        <StackPanel Grid.Column="1" Width="100" Background="Gray"/>
+
+        <Canvas x:Name="DrawFractalCanvas" Grid.Column="0"  Background="Blue" SizeChanged="DrawFractalCanvas_SizeChanged">
+
+
+        </Canvas>
+        <StackPanel Grid.Column="1" Background="Gray">
+            <Button x:Name="StartButton" Content="Start timer" FontSize="18" Click="StartButton_Click"/>
+            <Button x:Name="StepButton" Content="Step" FontSize="18" Click="StepButton_Click"/>
+            <Button x:Name="StopButton" Content="Refresh window" FontSize="18" Click="StopButton_Click"/>
+            <StackPanel>
+                <TextBlock Text="Count step"/>
+                <TextBox x:Name="CountStepTextBox" Text="25"/>
+                <TextBlock Text="Child lines"/>
+                <TextBox x:Name="ChildLinesTextBox" Text="10"/>
+                <TextBlock Text="Max Angle lines"/>
+                <TextBox x:Name="AngleLinesTextBox" Text="50"/>
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </Window>
