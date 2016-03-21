@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fractal_WPF", "Fractal_WPF\Fractal_WPF.csproj", "{126B3FA8-EC42-4024-9DD3-AE1D5E2074AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transformation_lab2", "Transformation_lab2\Transformation_lab2.csproj", "{76361DB6-75DF-41B8-BC17-F3FD9FBB4310}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{126B3FA8-EC42-4024-9DD3-AE1D5E2074AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{126B3FA8-EC42-4024-9DD3-AE1D5E2074AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{126B3FA8-EC42-4024-9DD3-AE1D5E2074AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76361DB6-75DF-41B8-BC17-F3FD9FBB4310}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76361DB6-75DF-41B8-BC17-F3FD9FBB4310}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76361DB6-75DF-41B8-BC17-F3FD9FBB4310}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76361DB6-75DF-41B8-BC17-F3FD9FBB4310}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
