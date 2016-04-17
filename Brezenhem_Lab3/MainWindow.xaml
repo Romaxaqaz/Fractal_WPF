@@ -1,0 +1,30 @@
+﻿<Window x:Class="Brezenhem_Lab3.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Brezenhem_Lab3"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="800" Width="1000">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="200"/>
+        </Grid.ColumnDefinitions>
+        <Grid>
+
+
+            <Canvas x:Name="ChildrenCanvas"  Background="Transparent" Height="800" Width="800"/>
+            <Canvas x:Name="MainCanvas" Background="Transparent" Height="800" Width="800" MouseDown="MainCanvas_MouseDown"/>
+        </Grid>
+        <StackPanel Grid.Column="1" Background="AntiqueWhite" Width="200">
+            <TextBlock Text="PixelSize" Margin="10,10,10,0"/>
+            <TextBox x:Name="PixelSize" Text="1" Margin="10,0,10,0"/>
+
+            <TextBlock Text="Radius" Margin="10,10,10,0"/>
+            <TextBox x:Name="RadiusTextBox" Text="100" Margin="10,0,10,0"/>
+            <Button x:Name="DrawButton" Content="Draw" Margin="10" Click="DrawButton_Click"/>
+            <Button x:Name="RemoveButton" Content="Remove" Margin="10" Click="RemoveButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

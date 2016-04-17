@@ -4,8 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Transformation_lab2"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="MainWindow" Width="1005" Height="600">
+        Title="MainWindow" Width="1205" Height="1000">
     <Window.Resources>
         <Style x:Key="TextBoxStyle" TargetType="TextBox">
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -14,30 +15,36 @@
             <Setter Property="Height" Value="25"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
+        <sys:Double x:Key="CanvasWidth">1000</sys:Double>
+        <sys:Double x:Key="CanvasHeigth">1000</sys:Double>
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="800"/>
+            <ColumnDefinition Width="1000"/>
             <ColumnDefinition Width="200"/>
         </Grid.ColumnDefinitions>
         <Grid>
-            <Canvas x:Name="DrawCanvas" Height="600" Background="Transparent"/>
+            <Canvas x:Name="DrawCanvas" Height="{StaticResource CanvasHeigth}" Background="Transparent"/>
             <ItemsControl ItemsSource="{Binding NewChildrenCanvas}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <Canvas x:Name="DrawChildrenCanvas" Height="600"  Background="Transparent"/>
+                        <Canvas x:Name="DrawChildrenCanvas" Height="1000"  Background="Transparent"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
             <ItemsControl ItemsSource="{Binding ChildrenCanvas}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <Canvas x:Name="DrawChildrenCanvas" Height="600" MouseDown="DrawCanvas_MouseDown"  Background="Transparent"/>
+                        <Canvas x:Name="DrawChildrenCanvas" Height="{StaticResource CanvasHeigth}" MouseDown="DrawCanvas_MouseDown"  Background="Transparent"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-            
-
+            <Canvas x:Name="PolCanvas2">
+            </Canvas>
+            <Canvas x:Name="PolCanvas">
+                <Polyline x:Name="PolyLine" Stroke="Green" StrokeThickness="4" >
+                </Polyline>
+            </Canvas>
         </Grid>
        
         <StackPanel  Grid.Column="1" Background="Beige">
@@ -78,15 +85,16 @@
                       CommandParameter="{Binding ElementName=ScaleCheckBox, Path=Name}"/>
             <StackPanel Orientation="Horizontal">
                 <Label Content="SX"  Margin="5"/>
-                <TextBox x:Name="ScaleSXTextBox" Text="{Binding ScaleX, Mode=TwoWay}" Style="{StaticResource TextBoxStyle}"/>
+                <TextBox x:Name="ScaleSXTextBox" Text="{Binding ScaleX, Mode=TwoWay}" Style="{StaticResource TextBoxStyle}" TextChanged="ScaleSXTextBox_TextChanged"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="SY"  Margin="5"/>
                 <TextBox x:Name="ScaleSYTextBox" Text="{Binding ScaleY ,Mode=TwoWay}" Style="{StaticResource TextBoxStyle}"/>
             </StackPanel>
             <Rectangle Height="2" Fill="Gray"/>
-            <Button Content="Start" Grid.Column="1" Command="{Binding RunTransformation}"  Margin="5"/>
-            <Button Content="Clear" Command="{Binding ClearCanvas}"  Margin="5"/>
+            <Button Content="Start" Grid.Column="1" Command="{Binding RunTransformation}"  Margin="5" Click="Button_Click"/>
+            <Button Content="Clear" Command="{Binding ClearCanvas}"  Margin="5" Click="Button_Click_1"/>
+
         </StackPanel>
       
     </Grid>

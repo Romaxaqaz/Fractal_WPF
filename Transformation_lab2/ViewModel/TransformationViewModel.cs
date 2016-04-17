@@ -10,25 +10,32 @@ using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
 using System.ComponentModel;
 using Transformation_lab2.Command;
+using System.Linq;
 
 namespace Transformation_lab2.ViewModel
 {
     public class TransformationViewModel : INotifyPropertyChanged
     {
+        private Matrix<double> Q;
+        private Point AroundPoint = new Point();
+
         #region Constants
         private const string MoveCheckBox = "MoveCheckBox";
         private const string RotateCheckBox = "RotateCheckBox";
         private const string ScaleCheckBox = "ScaleCheckBox";
         #endregion
 
+        #region Variables
         private string Methodname = string.Empty;
         private double DrawCanvasWidtdh;
         private double DrawCanvasHeight;
-
         private bool canExecute = true;
         public bool LastPointInsert { get; set; }
         int number = 1;
+        int pointName = 1;
+        #endregion
 
+        #region Constructor
         public TransformationViewModel()
         {
             pointCollection.CollectionChanged += PointCollection_CollectionChanged;
@@ -36,8 +43,62 @@ namespace Transformation_lab2.ViewModel
             RunTransformation = new RelayCommand(RunTransformClick, param => this.canExecute);
             ClearCanvas = new RelayCommand(ClearCollections, param => this.canExecute);
         }
+        #endregion
 
+        #region MainMatrix
+        private MathNet.Numerics.LinearAlgebra.Matrix<double> GetRotateMatrix()
+        {
+            var angleD = (double.Parse(Angle) * (System.Math.PI / 180.0)) * -1;
+            var oldX = (AroundPoint.X * (1 - Math.Cos(angleD))) + (AroundPoint.Y * Math.Sin(angleD));
+            var oldY = (AroundPoint.Y * (1 - Math.Cos(angleD))) - (AroundPoint.X * Math.Sin(angleD));
 
+            Matrix<double> R =
+                DenseMatrix.OfArray(new double[,] {
+                                                    { Math.Cos(angleD), Math.Sin(angleD), 0},
+                                                    {-Math.Sin(angleD), Math.Cos(angleD), 0},
+                                                    {oldX, oldY, 1},
+                                                  });
+            return R;
+        }
+
+        private MathNet.Numerics.LinearAlgebra.Matrix<double> GetScaleMatrix()
+        {
+            var scaleX = double.Parse(ScaleX);
+            var scaleY = double.Parse(ScaleY);
+            Matrix<double> S = DenseMatrix.OfArray(new double[,] {
+                                                    {scaleX,0,0},
+                                                    {0,scaleY,0},
+                                                    { AroundPoint.X * (1-scaleX), AroundPoint.Y * (1-scaleY),1},
+                                                 });
+            return S;
+        }
+
+        private MathNet.Numerics.LinearAlgebra.Matrix<double> GeMoveMatrix()
+        {
+            var moveX = double.Parse(MoveX);
+            var moveY = double.Parse(MoveY);
+            return DenseMatrix.OfArray(new double[,] {
+                                                    { 1, 0, 0},
+                                                    { 0, 1, 0},
+                                                    { moveX, moveY, 1},
+                                                  });
+        }
+        #endregion
+
+        #region Methods
+        private Vector<double> Vector(Point point)
+        {
+            return Vector<double>.Build.DenseOfArray(new double[] { point.X, point.Y, 1 });
+        }
+
+        private Point PointOutVector(Vector<double> vector)
+        {
+            Point p = new Point();
+            p.X = vector[0];
+            p.Y = vector[1];
+            return p;
+        }
+            
         private void PointCollection_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
 
@@ -70,77 +131,9 @@ namespace Transformation_lab2.ViewModel
             }
         }
 
-        /// <summary>
-        /// Moves the point
-        /// </summary>
-        /// <param name="x">move x axis</param>
-        /// <param name="y">move y a xic</param>
-        /// <param name="point">required point</param>
-        /// <returns></returns>
-        private Point MoveTransform(double x, double y, Point point)
-        {
-            Point newPoint = new Point();
-            Vector<double> v = Vector<double>.Build.DenseOfArray(new double[] { point.X, point.Y, 1 });
-            Matrix<double> A = DenseMatrix.OfArray(new double[,] {
-                                                                  { 1, 0, 0},
-                                                                  { 0, 1, 0},
-                                                                  { x, y, 1},
-                                                                 });
+        #endregion        
 
-
-            var resultVector = v * A;
-            newPoint.X = Math.Abs(resultVector[0]);
-            newPoint.Y = Math.Abs(resultVector[1]);
-            return newPoint;
-        }
-
-        /// <summary>
-        /// Scale position point
-        /// </summary>
-        /// <param name="sx">x scale factor</param>
-        /// <param name="sy">y scale factor</param>
-        /// <param name="point">required point</param>
-        /// <returns></returns>
-        private Point ScaleTranssform(double sx, double sy, Point point)
-        {
-            Point newPoint = new Point();
-            Vector<double> v = Vector<double>.Build.DenseOfArray(new double[] { point.X, point.Y, 1 });
-            Matrix<double> A = DenseMatrix.OfArray(new double[,] {
-                                                                  {sx,0,0},
-                                                                  {0,sy,0},
-                                                                  {0,0,1},
-                                                                 });
-            var resultVector = A * v;
-            newPoint.X = resultVector[0];
-            newPoint.Y = resultVector[1];
-            return newPoint;
-        }
-
-        /// <summary>
-        /// Rotates point
-        /// </summary>
-        /// <param name="point">required point</param>
-        /// <param name="arraund">around point</param>
-        /// <param name="angle">angle of rotation</param>
-        /// <returns></returns>
-        private Point RotateTranssform(Point point, Point arraund, double angle)
-        {
-            Point newPoint = new Point();
-
-            Vector<double> v = Vector<double>.Build.DenseOfArray(new double[] { point.X - arraund.X, point.Y - arraund.Y, 1 });
-            var angleD = (angle * (System.Math.PI / 180.0)) * -1;
-            Matrix<double> A = DenseMatrix.OfArray(new double[,] {
-                                                                  { Math.Cos(angleD), Math.Sin(angleD), 0},
-                                                                  {-Math.Sin(angleD), Math.Cos(angleD), 0},
-                                                                  {               0,               0, 1},
-                                                                 });
-
-            var res = A * v;
-            newPoint.X = res[0] + arraund.X;
-            newPoint.Y = res[1] + arraund.Y;
-            return newPoint;
-        }
-
+        #region DrawControls
         /// <summary>
         /// Creates a line
         /// </summary>
@@ -175,13 +168,10 @@ namespace Transformation_lab2.ViewModel
         {
             double width = 20; double height = 20;
             Ellipse ellipse = new Ellipse { Width = width, Height = height };
-            Label l = new Label();
             double left = desiredCenterX - (width / 2);
             double top = desiredCenterY - (height / 2);
 
             ellipse.Margin = new Thickness(left, top, 0, 0);
-            l.Margin = new Thickness(left, top, 0, 0);
-            l.Content = number.ToString();
             SolidColorBrush redBrush = new SolidColorBrush();
             redBrush.Color = Colors.Red;
             ellipse.Fill = redBrush;
@@ -199,59 +189,77 @@ namespace Transformation_lab2.ViewModel
         /// <returns></returns>
         private Label CreateLabel(Point p)
         {
-            DrawCanvasWidtdh = 800;
-            DrawCanvasHeight = 600;
+            DrawCanvasWidtdh = 1000;
+            DrawCanvasHeight = 1000;
+            double thickness = 5;
+            double WidthCenterCanvas = DrawCanvasWidtdh / 2;
+            double WidthCenterHeight = DrawCanvasHeight / 2;
+            SolidColorBrush yellowBrush = new SolidColorBrush();
+            yellowBrush.Color = Colors.Orange;
             Label l = new Label();
+            l.Background = yellowBrush;
+            l.FontWeight = FontWeights.Bold;
             p.X = (int)p.X;
             p.Y = (int)p.Y;
-            if (p.X < DrawCanvasWidtdh / 2 && p.Y > DrawCanvasHeight / 2)
+            if (p.X < WidthCenterCanvas && p.Y > WidthCenterHeight)
             {
-                l.Margin = new Thickness(p.X + 10, p.Y + 10, 0, 0);
-                l.Content = string.Format("{0},{1}", (p.X - DrawCanvasWidtdh / 2).ToString(), "-" + (p.Y - DrawCanvasHeight / 2).ToString());
+                l.Margin = new Thickness(p.X + thickness, p.Y, 0, 0);
+                l.Content = string.Format("{0} - ({1},{2})", pointName, (p.X - WidthCenterCanvas).ToString(), "-" + (p.Y - WidthCenterHeight).ToString());
 
             }
-            if (p.X < DrawCanvasWidtdh / 2 && p.Y < DrawCanvasHeight / 2)
+            if (p.X < WidthCenterCanvas && p.Y < WidthCenterHeight)
             {
-                l.Margin = new Thickness(p.X + 10, p.Y + 10, 0, 0);
-                l.Content = string.Format("{0},{1}", (p.X - DrawCanvasWidtdh / 2).ToString(), ((DrawCanvasHeight / 2) - p.Y).ToString());
+                l.Margin = new Thickness(p.X + thickness, p.Y + thickness, 0, 0);
+                l.Content = string.Format("{0} - ({1},{2})", pointName, (p.X - WidthCenterCanvas).ToString(), ((WidthCenterHeight) - p.Y).ToString());
 
             }
-            if (p.X > DrawCanvasWidtdh / 2 && p.Y < DrawCanvasHeight / 2)
+            if (p.X > WidthCenterCanvas && p.Y < WidthCenterHeight)
             {
-                l.Margin = new Thickness(p.X + 10, p.Y + 10, 0, 0);
-                l.Content = string.Format("{0},{1}", (p.X - (DrawCanvasWidtdh / 2)).ToString(), ((DrawCanvasHeight / 2) - p.Y).ToString());
+                l.Margin = new Thickness(p.X + thickness, p.Y, 0, 0);
+                l.Content = string.Format("{0} - ({1},{2})", pointName, (p.X - (WidthCenterCanvas)).ToString(), ((WidthCenterHeight) - p.Y).ToString());
 
             }
-            if (p.X > DrawCanvasWidtdh / 2 && p.Y > DrawCanvasHeight / 2)
+            if (p.X > WidthCenterCanvas && p.Y > WidthCenterHeight)
             {
-                l.Margin = new Thickness(p.X + 10, p.Y + 10, 0, 0);
-                l.Content = string.Format("{0},{1}", (p.X - (DrawCanvasWidtdh / 2)).ToString(), ((DrawCanvasHeight / 2) - p.Y).ToString());
+                l.Margin = new Thickness(p.X + thickness, p.Y, 0, 0);
+                l.Content = string.Format("{0} - ({1},{2})", pointName, (p.X - (WidthCenterCanvas)).ToString(), ((WidthCenterHeight) - p.Y).ToString());
 
             }
+            pointName++;
             return l;
         }
 
+        private void DrawLine(ObservableCollection<Point> points)
+        {
+            var nx = points[0];
+            foreach (var item in points)
+            {
+                NewChildrenCanvas.Add(DrawLine(nx.X, nx.Y, item.X, item.Y));
+                nx.X = item.X;
+                nx.Y = item.Y;
+            }
+        }
+        #endregion
+
+        #region Run Transform Methods
         /// <summary>
         /// Bigins the movement 
         /// </summary>
         public void RunMove()
         {
-            double mX = double.Parse(MoveX);
-            double mY = double.Parse(MoveY);
-            Point x = new Point();
-            x = PointCollection[1];
-            x.X += mX;
-            x.Y += mY;
-            var pointAr = PointCollection;
+            var pointAfterTransf = new ObservableCollection<Point>();
+            NewPointCollection = PointCollection;
+
+            AroundPoint = PointCollection[SelectedIndexPointsComboBox];
+            var MoveMatrix = GeMoveMatrix();
+
             foreach (var item in PointCollection)
             {
-                var newP = MoveTransform(mX, mY, item);
-                NewChildrenCanvas.Add(CreateEllipse(newP.X, newP.Y));
-                NewChildrenCanvas.Add(DrawLine(x.X, x.Y, newP.X, newP.Y));
-                NewChildrenCanvas.Add(CreateLabel(newP));
-                x.X = newP.X;
-                x.Y = newP.Y;
+                var newP = PointOutVector(Vector(item) * MoveMatrix);
+                pointAfterTransf.Add(newP);
             }
+            DrawLine(pointAfterTransf);
+             NewPointCollection = pointAfterTransf;
         }
 
         /// <summary>
@@ -259,20 +267,54 @@ namespace Transformation_lab2.ViewModel
         /// </summary>
         public void RunRotate()
         {
+            var pointAfterTransf = new ObservableCollection<Point>();
             var pointAround = SelectedIndexPointsComboBox;
+            NewPointCollection = PointCollection;
             int x = 0;
-           
-            foreach (var item in PointCollection)
+            AroundPoint = NewPointCollection[SelectedIndexPointsComboBox];
+            var RotateMatrix = GetRotateMatrix();
+
+            foreach (var item in NewPointCollection)
             {
                 if (x == pointAround)
                 {
                     x++;
+                    pointAfterTransf.Add(item);
                     continue;
                 }
-                var newP = RotateTranssform(item, PointCollection[SelectedIndexPointsComboBox], double.Parse(Angle));
+                var newP = PointOutVector(Vector(item) * RotateMatrix);
                 NewChildrenCanvas.Add(CreateEllipse(newP.X, newP.Y));
                 NewChildrenCanvas.Add((CreateLabel(newP)));
+                pointAfterTransf.Add(newP);
             }
+            DrawLine(pointAfterTransf);
+            NewPointCollection = pointAfterTransf;
+        }
+
+
+        public ObservableCollection<Point> RunRotate(ObservableCollection<Point> points, int index, double angle)
+        {
+            Angle = angle.ToString();
+            var pointAfterTransf = new ObservableCollection<Point>();
+            var pointAround = SelectedIndexPointsComboBox;
+            NewPointCollection = points;
+            int x = 0;
+            AroundPoint = NewPointCollection[index];
+            var RotateMatrix = GetRotateMatrix();
+
+            foreach (var item in NewPointCollection)
+            {
+                if (x == pointAround)
+                {
+                    x++;
+                    pointAfterTransf.Add(item);
+                    continue;
+                }
+                var newP = PointOutVector(Vector(item) * RotateMatrix);
+                pointAfterTransf.Add(newP);
+            }
+            DrawLine(pointAfterTransf);
+            return pointAfterTransf;
         }
 
         /// <summary>
@@ -280,15 +322,88 @@ namespace Transformation_lab2.ViewModel
         /// </summary>
         public void RunScale()
         {
-            foreach (var item in PointCollection)
+            var pointAfterTransf = new ObservableCollection<Point>();
+            int x = 0;
+            NewPointCollection = PointCollection;
+            int index = SelectedIndexPointsComboBox;
+            Point X = new Point();
+
+            AroundPoint = NewPointCollection[index];
+            var ScaleMatrix = GetScaleMatrix();
+
+            foreach (var item in NewPointCollection)
             {
-                double SX = double.Parse(ScaleX);
-                double SY = double.Parse(ScaleY);
-                var newP = ScaleTranssform(SX, SY, item);
-                NewChildrenCanvas.Add(CreateEllipse(newP.X, newP.Y));
-                NewChildrenCanvas.Add(CreateLabel(newP));
+               
+                var newP = PointOutVector(Vector(item) * ScaleMatrix);
+                if (x == index)
+                {
+                    pointAfterTransf.Add(item);
+                    X.X = item.X;
+                    X.Y = item.Y;
+                    x++;
+                    continue;
+                }
+                if (x == NewPointCollection.Count - 1)
+                {
+                    var p = pointAfterTransf[0];
+                    pointAfterTransf.Add(p);
+                    continue;
+                }
+                //NewChildrenCanvas.Add(DrawLine(X.X, X.Y, newP.X, newP.Y));
+                //NewChildrenCanvas.Add(CreateEllipse(newP.X, newP.Y));
+                //NewChildrenCanvas.Add(CreateLabel(newP));
+                pointAfterTransf.Add(newP);
+                x++;
             }
+            DrawLine(pointAfterTransf);
+            NewPointCollection = pointAfterTransf;
         }
+
+        public ObservableCollection<Point> RunScale(ObservableCollection<Point> points, int index2, double scaleX, double scaleY)
+        {
+            
+
+            var pointAfterTransf = new ObservableCollection<Point>();
+            int x = 0;
+            NewPointCollection = points;
+            int index = index2;
+            Point X = new Point();
+
+            AroundPoint = NewPointCollection[index];
+
+
+            Matrix<double> S = DenseMatrix.OfArray(new double[,] {
+                                                    {scaleX,0,0},
+                                                    {0,scaleY,0},
+                                                    { AroundPoint.X * (1-scaleX), AroundPoint.Y * (1-scaleY),1},
+                                                 });
+            var ScaleMatrix = S;
+
+            foreach (var item in NewPointCollection)
+            {
+
+                var newP = PointOutVector(Vector(item) * ScaleMatrix);
+                if (x == index)
+                {
+                    pointAfterTransf.Add(item);
+                    X.X = item.X;
+                    X.Y = item.Y;
+                    x++;
+                    continue;
+                }
+                if (x == NewPointCollection.Count - 1)
+                {
+                    var p = pointAfterTransf[0];
+                    pointAfterTransf.Add(p);
+                    continue;
+                }
+                pointAfterTransf.Add(newP);
+                x++;
+            }
+            return pointAfterTransf;
+        }
+
+
 
         /// <summary>
         /// Get the type of transformation 
@@ -328,7 +443,9 @@ namespace Transformation_lab2.ViewModel
         private void ClearCollections(object obj)
         {
             NewChildrenCanvas.Clear();
+            NewPointCollection.Clear();
         }
+        #endregion
 
         #region Properties
         private int selectedIndexPointsComboBox;
@@ -363,14 +480,14 @@ namespace Transformation_lab2.ViewModel
             set { angle = value; }
         }
 
-        private string scaleX = "0";
+        private string scaleX = "1,5";
         public string ScaleX
         {
             get { return scaleX; }
             set { scaleX = value; }
         }
 
-        private string scaleY = "0";
+        private string scaleY = "1,5";
         public string ScaleY
         {
             get { return scaleY; }
@@ -411,6 +528,10 @@ namespace Transformation_lab2.ViewModel
                 OnPropertyChanged("PointCollection");
             }
         }
+
+        private ObservableCollection<Point> newPointCollection = new ObservableCollection<Point>();
+        public ObservableCollection<Point> NewPointCollection = new ObservableCollection<Point>();
+
 
         private ObservableCollection<string> numberspoints = new ObservableCollection<string>();
         public ObservableCollection<string> Numberspoints
@@ -465,6 +586,7 @@ namespace Transformation_lab2.ViewModel
         }
         #endregion
 
+        #region Event
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged(string Property)
         {
@@ -473,6 +595,33 @@ namespace Transformation_lab2.ViewModel
                 PropertyChanged(this, new PropertyChangedEventArgs(Property));
             }
         }
+        #endregion
 
+        private Matrix<double> Mainmatrix(Point around, double x = 0, double y = 0,
+        double sx = 0, double sy = 0,
+        double angleD = 0)
+        {
+            Matrix<double> M =
+                DenseMatrix.OfArray(new double[,] {
+                                                    { 1, 0, 0},
+                                                    { 0, 1, 0},
+                                                    { x, y, 1},
+                                                   });
+            Matrix<double> S =
+                DenseMatrix.OfArray(new double[,] {
+                                                    {sx,0,0},
+                                                    {0,sy,0},
+                                                    {around.X * (1-sx), around.Y * (1-sy),1},
+                                                  });
+            Matrix<double> R =
+                DenseMatrix.OfArray(new double[,] {
+                                                    { Math.Cos(angleD), Math.Sin(angleD), 0},
+                                                    {-Math.Sin(angleD), Math.Cos(angleD), 0},
+                                                    {               0,               0, 1},
+                                                  });
+
+            Q = M * S * R;
+            return Q;
+        }
     }
 }
