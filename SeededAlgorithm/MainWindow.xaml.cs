@@ -36,10 +36,14 @@ namespace SeededAlgorithm
                 CreateARectangle(PixelSize, PixelSize, startPoint.X, startPoint.Y, RectangleColor.Black);
                 BlackPoint.Add(startPoint);
 
-                SearchNewButtonLR(startPoint, 50);
-                SearchNewButtonLR(startPoint, -50);
-                SearchNewButtonTB(startPoint, -50);
-                SearchNewButtonTB(startPoint, 50);
+                //rigth
+                SearchNewButtonLR(startPoint, PixelSize);
+                //top
+                SearchNewButtonTB(startPoint, -PixelSize);
+                //left
+                SearchNewButtonLR(startPoint, -PixelSize);
+                //buttom
+                SearchNewButtonTB(startPoint, PixelSize);
 
             }
             else
